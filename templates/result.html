@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result</title>
+</head>
+<body>
+    <h1>Result</h1>
+    <p>User Input: {{ userinput }}</p>
+    <h2>Results:</h2>
+    <ul>
+    {% for model, result in results.items() %}
+        <li>{{ model }}</li>
+        <ul>
+            <li>Test Accuracy: {{ result.test_accuracy }}</li>
+            <li>Classification Report: {{ result.classification_report }}</li>
+            <li>Prediction: {{ predictions[model] }}</li>
+        </ul>
+    {% endfor %}
+    </ul>
+</body>
+</html>
