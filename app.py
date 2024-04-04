@@ -1,10 +1,7 @@
-from flask import Flask, jsonify, redirect, render_template, request
-import os
-from ai import aifunction
+from flask import Flask, redirect, render_template, request
+from ai import aifunction  # Import the aifunction from ai.py
 
 app = Flask(__name__)
-
-
 
 @app.route('/', methods=['GET', 'POST'])
 def takeinput():
@@ -16,10 +13,10 @@ def takeinput():
 @app.route('/generate')
 def generate_summary():
     userinput = request.args.get('userinput', '')
-    results, predictions = aifunction(userinput)  # Call aifunction from ai.py
+    prediction = aifunction(userinput)  # Call aifunction from ai.py to get the prediction
 
-    # Pass results and predictions to the template for rendering
-    return render_template("result.html", userinput=userinput, results=results, predictions=predictions)
+    # Pass prediction to the template for rendering
+    return render_template("result.html", userinput=userinput, prediction=prediction)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)

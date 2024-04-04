@@ -1,3 +1,4 @@
+import warnings
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import Pipeline
@@ -9,18 +10,30 @@ from sklearn.impute import SimpleImputer
 from sklearn.metrics import accuracy_score, classification_report
 
 def aifunction(userinput):
-    data = pd.read_csv("/workspaces/fakenewsdetection/fake_or_real EDITED.csv")
+    
+    # Load first dataset
+    warnings.filterwarnings("ignore", category=UserWarning)
+    data1 = pd.read_csv("combined_Edited.csv")
+
+    # Load second dataset
+    data2 = pd.read_csv("news_data_Edited.csv")
+
+    # Combine datasets
+    combined_data = pd.concat([data1, data2], ignore_index=True)
 
     # Drop rows with missing values in 'title' or 'text' columns
-    data.dropna(subset=['title', 'text'], inplace=True)
+    combined_data.dropna(subset=['title', 'text'], inplace=True)
 
     # Handle missing values in 'label' column
-    data.dropna(subset=['label'], inplace=True)
+    combined_data.dropna(subset=['label'], inplace=True)
+
+    # Convert 'label' column to string type
+    combined_data['label'] = combined_data['label'].astype(str)
 
     # Feature Engineering
-    data['combined_text'] = data['title'] + ' ' + data['text']
-    X = data['combined_text']
-    y = data['label']
+    combined_data['combined_text'] = combined_data['title'] + ' ' + combined_data['text']
+    X = combined_data['combined_text']
+    y = combined_data['label']
 
     # Train-Test Split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -32,14 +45,13 @@ def aifunction(userinput):
 
     # Model Selection and parameter Tuning
     models = [
-        ('Logistic Regression', LogisticRegression()),
+        ('Logistic Regression', LogisticRegression(max_iter=1000)),
         ('Linear SVM', LinearSVC()),
         ('Random Forest', RandomForestClassifier())
-    ]
+    ]   
 
     # Train models
     trained_models = {}
-    results = {}  # Store results here
     for name, model in models:
         pipeline = Pipeline([
             ('tfidf', TfidfVectorizer(max_features=5000)),
@@ -49,17 +61,10 @@ def aifunction(userinput):
         pipeline.fit(X_train, y_train)
         trained_models[name] = pipeline
 
-        # Test models and store results
-        y_test_pred = pipeline.predict(X_test)
-        test_accuracy = accuracy_score(y_test, y_test_pred)
-        class_report = classification_report(y_test, y_test_pred, output_dict=True)
-        results[name] = {'test_accuracy': test_accuracy, 'classification_report': class_report}
-
-    # Predict label for custom input
-    custom_input = userinput
+    # Predict label for the custom input
     predictions = {}
     for name, model in trained_models.items():
-        y_pred = model.predict([custom_input])
+        y_pred = model.predict([userinput])
         predictions[name] = y_pred[0]
 
-    return results, predictions
+    return y_pred[0]
